@@ -1,0 +1,6 @@
+# Awesome metrics
+* install docker and docker-compose
+* run build.sh
+* wait...
+* wait...
+*Enjoy!
