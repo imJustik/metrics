@@ -1,0 +1,54 @@
+version: '3.5'
+
+services:
+  nginx:
+    image: ${NGINX}
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - metrics
+    container_name: nginx
+  api:
+    image: "${APISERVICE}"
+    restart: always
+    volumes:
+      - ./flask/app:/app
+    environment:
+      - "TZ=Europe/Moscow"
+      - FLASK_APP=main.py
+      - FLASK_DEBUG=1
+      - WERKZEUG_DEBUG_PIN=false
+      - 'RUN=flask run --host=0.0.0.0 --port=7777'
+    command: flask run --host=0.0.0.0 --port=7777
+    networks:
+      - metrics
+    container_name: api
+
+  graphite:
+    image: ${GRAPHITE}
+    restart: always
+    container_name: graphite
+    volumes:
+      - ./graphite/conf/opt/graphite/conf:/opt/graphite/conf/
+    networks:
+      - metrics
+    environment:
+      - "TZ=Europe/Moscow"
+
+  grafana:
+    image: ${GRAFANA}
+    restart: always
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - "TZ=Europe/Moscow"
+    volumes:
+      - ./graphana-plugins/:/var/lib/grafana/plugins
+    networks:
+      - metrics
+
+networks:
+  metrics:
+    driver: bridge
